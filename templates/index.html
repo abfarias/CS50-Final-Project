@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %} Vault {% endblock %}
+
+{% block main %}
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th class="text-start">Domain</th>
+            <th class="text-start">Username</th>
+            <th class="text-start">Password</th>
+        </tr>
+        </thead>
+            <tbody>
+                <tr>
+                    <td class="text-start">youtube.com</td>
+                    <td class="text-start">CrazyFrog_42</td>
+                    <td class="text-start">37192847918</td>
+                </tr>
+                <tr>
+                    <td class="text-start">gmail.com</td>
+                    <td class="text-start">loco3928@gmail.com</td>
+                    <td class="text-start">4298149810947895</td>
+                </tr>
+            </tbody>
+        <tfoot>
+                <td class="border-0 fw-bold text-end" colspan="4">TOTAL</td>
+                <td class="border-0 w-bold text-end">10</td>
+            </tr>
+        </tfoot>
+    </table>
+{% endblock %}
