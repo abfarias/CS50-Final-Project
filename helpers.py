@@ -1,5 +1,6 @@
 import sqlite3
-from flask import g
+from flask import redirect, session, g
+from functools import wraps
 
 
 # Start of Flask configuration for sqlite3 usage
@@ -24,7 +25,22 @@ def query_db(query, args=(), one=False):
     cur = get_db().execute(query, args)
     rv = cur.fetchall()
     cur.close()
+    g._database.commit()
     return (rv[0] if rv else None) if one else rv
 
 # End of Flask configuration for sqlite3 usage
-# For detailed information acess:https://flask.palletsprojects.com/en/2.3.x/patterns/sqlite3/
+# https://flask.palletsprojects.com/en/2.3.x/patterns/sqlite3/
+
+
+def login_required(f):
+    """
+    Decorate routes to require login.
+
+    https://flask.palletsprojects.com/en/1.1.x/patterns/viewdecorators/
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect("/login")
+        return f(*args, **kwargs)
+    return decorated_function
