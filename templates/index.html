@@ -1,31 +1,31 @@
 {% extends "layout.html" %}
 
+{% block scripts %} <script src="/static/js/index.js"></script> {% endblock %}
+
 {% block title %} Vault {% endblock %}
 
 {% block main %}
     <table class="table table-striped">
         <thead>
         <tr>
-            <th class="text-start">Domain</th>
             <th class="text-start">Username</th>
+            <th class="text-start">Domain</th>
             <th class="text-start">Password</th>
         </tr>
         </thead>
             <tbody>
                 <tr>
-                    <td class="text-start">youtube.com</td>
                     <td class="text-start">CrazyFrog_42</td>
+                    <td class="text-start">youtube.com</td>
                     <td class="text-start">37192847918</td>
-                </tr>
-                <tr>
-                    <td class="text-start">gmail.com</td>
-                    <td class="text-start">loco3928@gmail.com</td>
-                    <td class="text-start">4298149810947895</td>
+                    <td class="text-end"><button class="btn btn-primary btn-sm">Show</button></td>
+                    <td class="text-end"><button class="btn btn-primary btn-sm">Edit</button></td>
+                    <td class="text-end"><button class="btn btn-primary btn-sm">Delete</button></td>
                 </tr>
             </tbody>
         <tfoot>
-                <td class="border-0 fw-bold text-end" colspan="4">TOTAL</td>
-                <td class="border-0 w-bold text-end">10</td>
+            <tr>
+                <td class= "border-0 text-end" colspan="6"><button type="button" class="btn btn-primary btn-sm" id="add">Add</button></td>
             </tr>
         </tfoot>
     </table>
