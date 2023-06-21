@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block scripts %} <script src="/static/js/index.js"></script> {% endblock %}
+{% block scripts %} <script src="/static/index.js"></script> {% endblock %}
 
 {% block title %} Vault {% endblock %}
 
@@ -14,18 +14,20 @@
         </tr>
         </thead>
             <tbody>
+                {% for list in passwords %}
                 <tr>
-                    <td class="text-start">CrazyFrog_42</td>
-                    <td class="text-start">youtube.com</td>
-                    <td class="text-start">37192847918</td>
+                    <td class="text-start">{{ list.username }}</td>
+                    <td class="text-start">{{ list.domain }}</td>
+                    <td class="text-start">{{ list.hash }}</td>
                     <td class="text-end"><button class="btn btn-primary btn-sm">Show</button></td>
                     <td class="text-end"><button class="btn btn-primary btn-sm">Edit</button></td>
-                    <td class="text-end"><button class="btn btn-primary btn-sm">Delete</button></td>
+                    <td class="text-end"><button class="btn btn-primary btn-sm" name="delete" id="{{ list.id }}">Delete</button></td>
                 </tr>
+                {% endfor %}
             </tbody>
         <tfoot>
             <tr>
-                <td class= "border-0 text-end" colspan="6"><button type="button" class="btn btn-primary btn-sm" id="add">Add</button></td>
+                <td class= "border-0 text-end" colspan="6"><button class="btn btn-primary btn-sm" id="add">Add</button></td>
             </tr>
         </tfoot>
     </table>
