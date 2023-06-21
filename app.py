@@ -1,4 +1,4 @@
-from flask import Flask, flash, redirect, render_template, request, session, g
+from flask import Flask, flash, jsonify, redirect, render_template, request, session, g
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -30,17 +30,17 @@ def index():
         # Ensure username was submitted
         if not request.form.get('username'):
             flash('Username is missing!', 'warning')
-            return render_template('index.html')
+            return redirect('/')
 
         # Ensure domain was submitted
         elif not request.form.get('domain'):
             flash('Domain is missing!', 'warning')
-            return render_template('index.html')
+            return redirect('/')
 
         # Ensure password was submitted
         elif not request.form.get('password'):
             flash('Password is missing!', 'warning')
-            return render_template('index.html')
+            return redirect('')
 
         # Save it into the database
         username = request.form.get('username')
@@ -48,12 +48,30 @@ def index():
         password = request.form.get('password')
 
         query_db('INSERT INTO passwords (user_id, username, domain, hash) VALUES (?, ?, ?, ?)', [session['user_id'], username, domain, password])
-
+        
+        # Redirect user to home page
         flash('Password saved!', 'success')
-        return render_template('index.html')
+        return redirect('/')
 
+    # User reached route via DELETE
+    elif request.method == 'DELETE':
+        delete_info = request.get_json()
+        
+        if delete_info is not None:
+            query_db("DELETE FROM passwords WHERE id = ?", [delete_info['id']])
+            flash('Password deleted!', 'danger')
+            return jsonify({'success': True}), 200
+        
+        else:
+            return redirect('/')
+       
+    # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template('index.html')
+
+        # Get updated list of passwords
+        passwords = query_db("SELECT id, username, domain, hash FROM passwords WHERE user_id = ?", [session['user_id']])
+
+        return render_template('index.html', passwords=passwords)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -96,7 +114,7 @@ def register():
         query_db('INSERT INTO users (username, hash) VALUES(?, ?)', [username, hash])
 
         # Remember which user has register
-        id = query_db('SELECT id FROM users WHERE username = ?', [username])
+        id = query_db('SELECT id FROM users WHERE username = ? AND user_id = ?', [username, session['user_id']])
 
         session['user_id'] = id[0]['id']
 
