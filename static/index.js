@@ -66,4 +66,38 @@ document.addEventListener('DOMContentLoaded', () => {
         main.appendChild(form);
     });
 
+
+    // Create confirmation interface for deleting a password
+    const deleteButtons = document.getElementsByName('delete');
+    
+    for (let i = 0, buttons = deleteButtons.length; i < buttons; i++) {
+
+        const deleteButton = deleteButtons[i];
+        deleteButton.addEventListener('click', () => {
+
+            // Remenber password row
+            const id = deleteButton.getAttribute('id');
+
+            // Send a DELETE http request if user's confirmation is true
+            if (confirm('Are you sure you want to delete this password?')) {
+                fetch('/', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: id })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        console.log('Error: ' + response.statusText);
+                    }
+                })
+                .catch(error => {
+                    console.log('Error: ' + error);
+                });
+            }
+        });
+    }
 });
