@@ -164,6 +164,53 @@ def login():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template('login.html')
+    
+
+@app.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == 'POST':
+
+        # Ensure previous password was submitted
+        if not request.form.get('previous_password'):
+            flash('Missing previous password!', 'warning')
+            return render_template('change_password.html')
+        
+        # Ensure new password was submitted
+        elif not request.form.get('new_password'):
+            flash('Missing new password!', 'warning')
+            return render_template('change_password.html')
+
+        # Ensure new password confirmation was submitted
+        elif not request.form.get('confirmation'):
+            flash('Missing new password confirmation!', 'warning')
+            return render_template('change_password.html')
+        
+        # Ensure new password confirmation matches
+        elif request.form.get('new_password') != request.form.get('confirmation'):
+            flash('Password confirmation does not match!', 'warning')
+            return render_template('change_password.html')
+        
+        # Ensure previous password exists in the database
+        hash = query_db('SELECT hash FROM users WHERE id = ?', [session['user_id']], True)
+
+        if not check_password_hash(hash['hash'], request.form.get('previous_password')):
+            flash('Previous password does not match!', 'danger')
+            return render_template('change_password.html')
+        
+        # Update previous password
+        new_hash = generate_password_hash(request.form.get('new_password'))
+
+        query_db('UPDATE users SET hash = ? WHERE id = ?', [new_hash, session['user_id']])
+
+        # Disconnect user and redirect to login page
+        return redirect('/logout')
+    
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template('change_password.html')
 
 
 @app.route('/logout')
