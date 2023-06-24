@@ -1,6 +1,6 @@
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, g
 from flask_session import Session
-from werkzeug.security import check_password_hash, generate_password_hash
+from security import generate_hash, check_password, check_rehash
 
 from helpers import login_required, query_db
 
@@ -109,14 +109,14 @@ def register():
 
         # Store the username and hashed password into the database
         username = request.form.get('username')
-        hash = generate_password_hash(request.form.get('password'))
+        hash = generate_hash(request.form.get('password'))
 
         query_db('INSERT INTO users (username, hash) VALUES(?, ?)', [username, hash])
 
         # Remember which user has register
-        id = query_db('SELECT id FROM users WHERE username = ? AND user_id = ?', [username, session['user_id']])
+        id = query_db('SELECT id FROM users WHERE username = ?', [username], True)
 
-        session['user_id'] = id[0]['id']
+        session['user_id'] = id['id']
 
         # Redirect user to home page
         flash('Registered!', 'primary')
@@ -151,12 +151,17 @@ def login():
         rows = query_db('SELECT * FROM users WHERE username = ?', [request.form.get('username')])
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]['hash'], request.form.get('password')):
+        if len(rows) != 1 or not check_password(rows[0]['hash'], request.form.get('password')):
             flash('Username or password does not match!', 'danger')
             return render_template('login.html')
 
         # Remember which user has logged in
         session['user_id'] = rows[0]['id']
+
+        # Ensure hash is up to date
+        if check_rehash(rows[0]['hash']):
+            new_hash = generate_hash(request.form.get('password'))
+            query_db('UPDATE users SET hash = ? WHERE id = ?', [new_hash, session['user_id']])
 
         # Redirect user to home page
         return redirect('/')
@@ -196,12 +201,12 @@ def change_password():
         # Ensure previous password exists in the database
         hash = query_db('SELECT hash FROM users WHERE id = ?', [session['user_id']], True)
 
-        if not check_password_hash(hash['hash'], request.form.get('previous_password')):
+        if not check_password(hash['hash'], request.form.get('previous_password')):
             flash('Previous password does not match!', 'danger')
             return render_template('change_password.html')
         
         # Update previous password
-        new_hash = generate_password_hash(request.form.get('new_password'))
+        new_hash = generate_hash(request.form.get('new_password'))
 
         query_db('UPDATE users SET hash = ? WHERE id = ?', [new_hash, session['user_id']])
 
