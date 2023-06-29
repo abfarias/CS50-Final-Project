@@ -7,10 +7,11 @@ argon2-cffi: https://argon2-cffi.readthedocs.io/en/stable/argon2.html
 cryptography: https://cryptography.io/en/latest/
 
 """
-
-import os
+import base64
 from argon2 import PasswordHasher, exceptions
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 ph = PasswordHasher()
@@ -37,37 +38,30 @@ def check_rehash(hash: str) -> bool:
     return False
 
 
-def generate_user_public_key():
-    """Generate random AES-GCM key"""
-    key = AESGCM.generate_key(bit_length=128)
-    return AESGCM(key)
-
-
-def encrypt_data(data: str, user_public_key: AESGCM, user_secret_key: str) -> tuple[bytes, bytes]:
-    """Encrypt provided data"""
-
-    # Convert strings to binary
-    binary_data = data.encode('utf-8')
-    user_secret_key = user_secret_key.encode('utf-8')
+def derive_key(password: str, salt: bytes) -> bytes:
     
-    # Set up random bytenumber
-    nonce = os.urandom(16)
+    password = password.encode('utf-8')
 
-    # Call encrypt method
-    encrypted_data = user_public_key.encrypt(nonce, binary_data, user_secret_key)
-    
-    # Return resulting encrypted data and random bytenumber
-    return encrypted_data, nonce
+    # Key derivation function setup
+    kdf = PBKDF2HMAC(
+    algorithm=hashes.SHA256(),
+    length=32,
+    salt=salt,
+    iterations=600000,
+    )
+
+    # Key to realize encryption
+    key = base64.urlsafe_b64encode(kdf.derive(password))
+
+    return key
 
 
-def decrypt_data(*encrypted_data, user_public_key: AESGCM, user_secret_key: str) -> str:
-    """Decrypt provided data"""
+def encrypt(key: Fernet, data: str) -> bytes:
+    data = data.encode('utf-8')
+    token = key.encrypt(data)
+    return token
 
-    # Convert string to binary
-    user_secret_key = user_secret_key.encode('utf-8')
-    
-    # Call decrypt method
-    decrypted_data = user_public_key.decrypt(encrypted_data[1], encrypted_data[0], user_secret_key)
-    
-    # Return decrypted data as string 
-    return decrypted_data.decode('utf-8')
+
+def decrypt(key: Fernet, token: bytes) -> bytes:
+        data = key.decrypt(token)
+        return data 
