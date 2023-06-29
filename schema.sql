@@ -2,6 +2,8 @@ CREATE TABLE users (
     id INTEGER NOT NULL,
     username TEXT NOT NULL,
     hash TEXT NOT NULL,
+    m_hash TEXT NOT NULL,
+    salt BLOB NOT NULL,
     PRIMARY KEY(id)
 );
 
