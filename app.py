@@ -1,7 +1,9 @@
+import os
+
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, g
 from flask_session import Session
-from security import generate_hash, check_password, check_rehash
-
+from security import generate_hash, check_password, check_rehash, derive_key, encrypt, decrypt
+from cryptography.fernet import Fernet
 from helpers import login_required, query_db
 
 app = Flask(__name__)
@@ -9,6 +11,9 @@ app = Flask(__name__)
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
+
+# Server Fernet key
+server_key = Fernet(b'EpI8xrilovVLxd3QwMtEM5Pwbkwyb4JeXulio3JAnjE=')
 
 
 @app.teardown_appcontext
@@ -40,13 +45,16 @@ def index():
         # Ensure password was submitted
         elif not request.form.get('password'):
             flash('Password is missing!', 'warning')
-            return redirect('')
+            return redirect('/')
+
+        # Encrypt data
+        user_key = Fernet(session['user_key'])
+
+        username = encrypt(user_key, request.form.get('username', type=str))
+        domain = encrypt(user_key, request.form.get('domain', type=str))
+        password = encrypt(user_key, request.form.get('password', type=str))
 
         # Save it into the database
-        username = request.form.get('username')
-        domain = request.form.get('domain')
-        password = request.form.get('password')
-
         query_db('INSERT INTO passwords (user_id, username, domain, hash) VALUES (?, ?, ?, ?)', [session['user_id'], username, domain, password])
         
         # Redirect user to home page
@@ -69,10 +77,18 @@ def index():
     else:
 
         # Get updated list of passwords
-        passwords = query_db("SELECT id, username, domain, hash FROM passwords WHERE user_id = ?", [session['user_id']])
+        list = query_db("SELECT id, username, domain, hash FROM passwords WHERE user_id = ?", [session['user_id']])
 
-        return render_template('index.html', passwords=passwords)
+        # Decrypt list items
+        user_key = Fernet(session['user_key'])
 
+        for item in list:
+            item['username'] = decrypt(user_key, item['username']).decode('utf-8')
+            item['domain'] = decrypt(user_key, item['domain']).decode('utf-8')
+            item['hash'] = decrypt(user_key, item['hash']).decode('utf-8')
+
+        return render_template('index.html', list=list)
+    
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -96,6 +112,11 @@ def register():
             flash('Password must be confirmed!', 'warning')
             return render_template('register.html')
 
+        # Ensure master password was submitted
+        elif not request.form.get('master_password'):
+            flash('Master password is missing!', 'warning')
+            return render_template('register.html')
+        
         # Ensure password confirmation matches password
         elif request.form.get('password') != request.form.get('confirmation'):
             flash('Passwords does not match!', 'danger')
@@ -107,11 +128,19 @@ def register():
             flash('Username is already taken!', 'warning')
             return render_template('register.html')
 
-        # Store the username and hashed password into the database
+        # Derive encryption from master password
+        salt = os.urandom(16)
+        key = derive_key(request.form.get('master_password', type=str), salt) 
+        
+        session['user_key'] = key
+
+        # Store the username, hashed passwords and encrypted salt into the database
         username = request.form.get('username')
         hash = generate_hash(request.form.get('password'))
+        m_hash = generate_hash(request.form.get('master_password'))
+        encrypted_salt = server_key.encrypt(salt)
 
-        query_db('INSERT INTO users (username, hash) VALUES(?, ?)', [username, hash])
+        query_db('INSERT INTO users (username, hash, m_hash, salt) VALUES(?, ?, ?, ?)', [username, hash, m_hash, encrypted_salt])
 
         # Remember which user has register
         id = query_db('SELECT id FROM users WHERE username = ?', [username], True)
@@ -146,22 +175,38 @@ def login():
         elif not request.form.get('password'):
             flash('Password is missing!', 'warning')
             return render_template('login.html')
+        
+         # Ensure master password was submitted
+        elif not request.form.get('master_password'):
+            flash('Master password is missing!', 'warning')
+            return render_template('login.html')
 
         # Query database for username
         rows = query_db('SELECT * FROM users WHERE username = ?', [request.form.get('username')])
 
-        # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password(rows[0]['hash'], request.form.get('password')):
-            flash('Username or password does not match!', 'danger')
+        # Ensure username exists and passwords are correct
+        if len(rows) != 1 or not check_password(rows[0]['hash'], request.form.get('password')) or not check_password(rows[0]['m_hash'], request.form.get('master_password')):
+            flash('Username or passwords does not match!', 'danger')
             return render_template('login.html')
 
         # Remember which user has logged in
         session['user_id'] = rows[0]['id']
 
+        # Derive same encryption key generated in /register from master password
+        encrypted_salt = query_db('SELECT salt FROM users WHERE id = ?', [session['user_id']], True)
+        salt = decrypt(server_key, encrypted_salt['salt'])
+        
+        key = derive_key(request.form.get('master_password', type=str), salt) 
+        
+        session['user_key'] = key
+
         # Ensure hash is up to date
         if check_rehash(rows[0]['hash']):
             new_hash = generate_hash(request.form.get('password'))
             query_db('UPDATE users SET hash = ? WHERE id = ?', [new_hash, session['user_id']])
+        elif check_rehash(rows[0]['m_hash']):
+            new_m_hash = generate_hash(request.form.get('master_password'))
+            query_db('UPDATE users SET m_hash = ? WHERE id = ?', [new_m_hash, session['user_id']]) 
 
         # Redirect user to home page
         return redirect('/')
