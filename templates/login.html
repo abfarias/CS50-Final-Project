@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
 
+{% block scripts %} <script src="/static/login.js"></script> {% endblock %}
+
 {% block title %} Login {% endblock %}
 
 {% block main %}
@@ -10,8 +12,14 @@
         <div class="mb-3">
             <input class="form-control mx-auto w-auto" id="password" name="password" placeholder="Password" type="password">
         </div>
-        <div class="mb-3">
+        <div class="mb-2">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" id="master_password" name="master_password" placeholder="Master password" type="password">
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" style="float:none";>
+            <label class="form-check-label" for="flexCheckDefault">
+                Show password
+            </label>
         </div>
         <button class="btn btn-primary" type="submit">Log In</button>
     </form>
