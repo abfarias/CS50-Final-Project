@@ -21,14 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
             input.setAttribute('class', 'form-control mx auto w-auto');
 
             if (i == 0) {
-                input.setAttribute('id', 'username');
-                input.setAttribute('name', 'username');
-                input.setAttribute('placeholder', 'Username');
-                input.setAttribute('type', 'text');
-            } else if (i == 1) {
                 input.setAttribute('id', 'domain');
                 input.setAttribute('name', 'domain');
                 input.setAttribute('placeholder', 'Domain');
+                input.setAttribute('type', 'text');
+            } else if (i == 1) {
+                input.setAttribute('id', 'username');
+                input.setAttribute('name', 'username');
+                input.setAttribute('placeholder', 'Username');
                 input.setAttribute('type', 'text');
             } else {
                 input.setAttribute('id', 'password');
@@ -129,6 +129,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 eyeIcon.setAttribute('src', '../static/images/eye.svg')
                 eyeIcon.setAttribute('alt', 'Show')
             }
+        });
+    }
+
+
+    // Create 'copy to clipboard' functionality
+    // Adapted from https://www.youtube.com/watch?v=9-vBx7F0lns
+    const copyButtons = document.getElementsByName('copy-button')
+    const clipboards = document.getElementsByName('clipboard')
+
+    for (let i = 0, length = copyButtons.length; i < length; i++) {
+
+        const copyButton = copyButtons[i]
+        const password = passwords[i]
+        const clipboard = clipboards[i]
+
+        copyButton.addEventListener('click', () => {
+            
+            const value = password.getAttribute('value')
+            
+            // Workaround to allow copying "type: password" input fields
+            const hiddenText = document.createElement('input')
+            hiddenText.setAttribute('value', `${value}`)
+
+            document.body.appendChild(hiddenText)
+
+            hiddenText.select()
+            document.execCommand('copy') // Deprecated, but it'll do for now...
+            
+            document.body.removeChild(hiddenText)
+            
+            clipboard.setAttribute('src', '../static/images/clipboard-check.svg')
+            window.getSelection().removeAllRanges()
+            setTimeout(() => {
+                clipboard.setAttribute('src', '../static/images/clipboard.svg')
+            }, 1500);
         });
     }
 });
