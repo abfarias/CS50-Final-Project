@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // Create form for user input
-    const addButton = document.querySelector('#add');
+    const addButton = document.getElementById('add');
     addButton.addEventListener('click', () => {
 
         const form = document.createElement('form');
@@ -68,15 +68,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Create confirmation interface for deleting a password
+    const rows = document.getElementsByName('tbody-row')
     const deleteButtons = document.getElementsByName('delete');
     
-    for (let i = 0, buttons = deleteButtons.length; i < buttons; i++) {
+    for (let i = 0, length = deleteButtons.length; i < length; i++) {
 
+        const row = rows[i]
         const deleteButton = deleteButtons[i];
         deleteButton.addEventListener('click', () => {
 
             // Remenber password row
-            const id = deleteButton.getAttribute('id');
+            const id = row.getAttribute('id');
 
             // Send a DELETE http request if user's confirmation is true
             if (confirm('Are you sure you want to delete this password?')) {
@@ -97,6 +99,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(error => {
                     console.log('Error: ' + error);
                 });
+            }
+        });
+    }
+
+
+    // Create password visibility toggler functionality
+    const visibilityButtons = document.getElementsByName('visibility')
+    const passwords = document.getElementsByName('password-field')
+    const eyeIcons = document.getElementsByName('eye')
+
+    for (let i = 0, length = visibilityButtons.length; i < length; i++) {
+        
+        const eyeIcon = eyeIcons[i]
+        const password = passwords[i]
+        const visibilityButton = visibilityButtons[i]
+        visibilityButton.addEventListener('click', () => {
+            
+            const passwordType = password.getAttribute('type')
+
+            if (passwordType == 'password') {
+                password.setAttribute('type', 'text')
+                visibilityButton.setAttribute('title', 'Hide')
+                eyeIcon.setAttribute('src', '../static/images/eye-slash.svg')
+                eyeIcon.setAttribute('alt', 'Hide')
+            } else {
+                password.setAttribute('type', 'password')
+                visibilityButton.setAttribute('title', 'Show')
+                eyeIcon.setAttribute('src', '../static/images/eye.svg')
+                eyeIcon.setAttribute('alt', 'Show')
             }
         });
     }
