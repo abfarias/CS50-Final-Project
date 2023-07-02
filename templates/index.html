@@ -21,12 +21,12 @@
                     <td class="text-start">{{ item.domain}}</td>
                     <td class="text-start">{{ item.username }}</td>
                     <td class="text-start">
-                        <div class="container-sm">
+                        <div class="container-sm px-0">
                             <input class="form-control mx-auto w-auto" name="password-field" type="password" value="{{ item.hash }}" readonly style="display:inline-block">
                             <button class="btn" name="visibility" title="Show">
                                 <img src="../static/images/eye.svg" alt="Show" name="eye">
                             </button>
-                            <button class="btn" name="clipboard" title="Copy to clipboard">
+                            <button class="btn" name="copy-button" title="Copy to clipboard">
                                 <img src="../static/images/clipboard.svg" alt="Copy to clipboard" name="clipboard">
                             </button>
                             <button class="btn" name="edit" title="Edit">
