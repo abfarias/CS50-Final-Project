@@ -1,5 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Create password visibility toggler for modal form
+    const password = document.getElementById('password')
+    const check = document.getElementById('flexCheckDefault')
+
+    check.addEventListener('click', () => {
+
+        const passwordType = password.getAttribute('type');
+
+        if (passwordType == 'password') {
+            password.setAttribute('type', 'text');
+        } else {
+            password.setAttribute('type', 'password');
+        }
+    });
+
+    
     // Create confirmation interface for deleting a password
     const rows = document.getElementsByName('tbody-row')
     const deleteButtons = document.getElementsByName('delete');
@@ -37,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Create password visibility toggler functionality
+    // Create password visibility toggler for items in the table
     const visibilityButtons = document.getElementsByName('visibility')
     const passwords = document.getElementsByName('password-field')
     const eyeIcons = document.getElementsByName('eye')
