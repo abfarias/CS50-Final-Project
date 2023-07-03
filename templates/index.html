@@ -42,10 +42,35 @@
             </tbody>
         <tfoot>
             <tr>
-                <td class= "border-0 text-end" colspan="6"><button class="btn btn-light" id="add" title="Add">
+                <td class= "border-0 text-end" colspan="6"><button class="btn btn-light" id="add" title="Add" data-bs-toggle="modal" data-bs-target="#exampleModal">
                     <img src="../static/images/plus-square.svg" alt="Add">
                 </button></td>
             </tr>
         </tfoot>
     </table>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Add a new password</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/" method="post">
+                    <div class="mb-3">
+                        <input autocomplete="off" autofocus class="form-control mx auto w-auto" id="domain" name="domain" placeholder="Domain" type="text" style="display:inline-block">
+                    </div>
+                    <div class="mb-3">
+                        <input autocomplete="off" autofocus class="form-control mx auto w-auto" id="username" name="username" placeholder="Username" type="text" style="display:inline-block">
+                    </div>
+                    <div class="mb-3">
+                        <input autocomplete="off" autofocus class="form-control mx auto w-auto" id="password" name="password" placeholder="Password" type="password" style="display:inline-block">
+                    </div>
+                    <button class="btn btn-primary btn-sm" type="submit">Confirm</button>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
