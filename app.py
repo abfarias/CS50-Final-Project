@@ -261,6 +261,45 @@ def change_password():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template('change_password.html')
+    
+
+@app.route('/delete_account', methods=['GET', 'POST'])
+@login_required
+def delete_account():
+    
+    if request.method == 'POST':
+         
+        # Ensure username was submitted
+        if not request.form.get('username'):
+            flash('Username is missing!', 'warning')
+            return render_template('delete_account.html')
+
+        # Ensure password was submitted
+        elif not request.form.get('password'):
+            flash('Password is missing!', 'warning')
+            return render_template('delete_account.html')
+        
+         # Ensure master password was submitted
+        elif not request.form.get('master_password'):
+            flash('Master password is missing!', 'warning')
+            return render_template('delete_account.html')
+
+        # Query database for username
+        rows = query_db('SELECT * FROM users WHERE username = ?', [request.form.get('username')])
+
+        # Ensure username exists and passwords are correct
+        if len(rows) != 1 or not check_password(rows[0]['hash'], request.form.get('password')) or not check_password(rows[0]['m_hash'], request.form.get('master_password')):
+            flash('Username or passwords does not match!', 'danger')
+            return render_template('delete_account.html')
+        
+        # Delete user data
+        query_db('DELETE FROM passwords WHERE user_id = ?', [session['user_id']])
+        query_db('DELETE FROM users WHERE id = ?', [session['user_id']])
+
+        # Disconnect user and redirect to login page
+        return redirect('/logout')
+    else:
+        return render_template('delete_account.html')
 
 
 @app.route('/logout')
