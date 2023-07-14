@@ -211,6 +211,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             cancelButton.appendChild(cancelIcon)
             newUtilityCell.appendChild(cancelButton)
+
+            cancelButton.addEventListener('click', () => {location.reload()})
             
             domainInput.setAttribute('id', 'input-test')
             
