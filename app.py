@@ -24,7 +24,7 @@ def close_connection(exception):
         db.close()
 
 
-@app.route('/', methods=['GET', 'POST', 'DELETE'])
+@app.route('/', methods=['GET', 'POST', 'DELETE', 'UPDATE'])
 @login_required
 def index():
     """Show passwords vault"""
@@ -66,12 +66,36 @@ def index():
         delete_info = request.get_json()
         
         if delete_info is not None:
-            query_db("DELETE FROM passwords WHERE id = ?", [delete_info['id']])
+            query_db('DELETE FROM passwords WHERE id = ?', [delete_info['id']])
             flash('Password deleted!', 'danger')
             return jsonify({'success': True}), 200
         
         else:
             return redirect('/')
+    
+    # User reached route via UPDATE
+    elif request.method == 'UPDATE':
+        update_info = request.get_json()
+
+        # Search database for corresponding item
+        if update_info is not None:
+
+            # Encrypt updated info
+            user_key = Fernet(session['user_key'])
+
+            domain = encrypt(user_key, update_info['domain'])
+            username = encrypt(user_key, update_info['username'])
+            password = encrypt(user_key, update_info['password'])
+
+            # Insert encrypted info into the database
+            query_db('UPDATE passwords SET username = ?,  domain = ?,  hash = ? WHERE id = ?', [username, domain, password, update_info['id']])
+
+            flash('Password updated!', 'success')
+            return jsonify({'success': True}), 200
+        
+        else:
+            return redirect('/')
+
        
     # User reached route via GET (as by clicking a link or via redirect)
     else:

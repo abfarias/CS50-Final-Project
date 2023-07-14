@@ -55,13 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Create password visibility toggler for items in the table
     const visibilityButtons = document.getElementsByName('visibility')
-    const passwords = document.getElementsByName('password-field')
+    const passwordFields = document.getElementsByName('password-field')
     const eyeIcons = document.getElementsByName('eye')
 
     for (let i = 0, length = visibilityButtons.length; i < length; i++) {
         
         const eyeIcon = eyeIcons[i]
-        const password = passwords[i]
+        const password = passwordFields[i]
         const visibilityButton = visibilityButtons[i]
         visibilityButton.addEventListener('click', () => {
             
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0, length = copyButtons.length; i < length; i++) {
 
         const copyButton = copyButtons[i]
-        const password = passwords[i]
+        const password = passwordFields[i]
         const clipboard = clipboards[i]
 
         copyButton.addEventListener('click', () => {
@@ -113,6 +113,139 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 clipboard.setAttribute('src', '../static/images/clipboard.svg')
             }, 1500);
+        });
+    }
+
+
+    // Create edit interface
+    const editButtons = document.getElementsByName('edit-button')
+    const domainCells = document.getElementsByName('domain-cell')
+    const usernameCells = document.getElementsByName('username-cell')
+    const passwordCells = document.getElementsByName('password-cell')
+    const utilityCells = document.getElementsByName('utility-cell')
+
+    for (i = 0, length = editButtons.length; i < length; i++) {
+         
+        const row = rows[i]
+        const editButton = editButtons[i]
+        const domainCell = domainCells[i]
+        const usernameCell = usernameCells[i]
+        const passwordCell = passwordCells[i]
+        const utilityCell = utilityCells[i]
+        const passwordField = passwordFields[i]
+
+        // Remember row id
+        const id = row.getAttribute('id')
+        
+        editButton.addEventListener('click', () => {
+
+            // Get domain, username and password values
+            const domain = domainCell.textContent
+            const username = usernameCell.textContent
+            const password = passwordField.getAttribute('value')
+
+            // Change selected row cells into input fields for editing
+                // Remove previous elements
+                // Create and append input elements
+                    // Insert previous values into the input fields
+            
+            row.removeChild(domainCell)
+            row.removeChild(usernameCell)
+            row.removeChild(passwordCell)
+            row.removeChild(utilityCell)
+
+            const newDomainCell = document.createElement('td')
+            const domainInput = document.createElement('input')
+            domainInput.setAttribute('autocomplete', 'off')
+            domainInput.setAttribute('autofocus', 'true')
+            domainInput.setAttribute('class', 'form-control mb-0 mx-0 w-auto')
+            domainInput.setAttribute('value', `${domain}`)
+            newDomainCell.appendChild(domainInput)
+
+            const newUsernameCell = document.createElement('td')
+            const usernameInput = document.createElement('input')
+            usernameInput.setAttribute('autocomplete', 'off')
+            usernameInput.setAttribute('autofocus', 'true')
+            usernameInput.setAttribute('class', 'form-control mb-0 mx-0 w-auto')
+            usernameInput.setAttribute('value', `${username}`)
+            newUsernameCell.appendChild(usernameInput)
+
+            const newPasswordCell = document.createElement('td')
+            const passwordInput = document.createElement('input')
+            passwordInput.setAttribute('autocomplete', 'off')
+            passwordInput.setAttribute('autofocus', 'true')
+            passwordInput.setAttribute('class', 'form-control mb-0 mx-0 w-auto')
+            passwordInput.setAttribute('value', `${password}`)
+            newPasswordCell.appendChild(passwordInput)
+
+            const newUtilityCell = document.createElement('td')
+
+            row.appendChild(newDomainCell)
+            row.appendChild(newUsernameCell)
+            row.appendChild(newPasswordCell)
+            row.appendChild(newUtilityCell)
+
+    
+            // Create button for sending edit changes to the server
+            const confirmButton = document.createElement('button')
+            confirmButton.setAttribute('class', 'btn');
+            confirmButton.setAttribute('title', 'Save Changes')
+            confirmButton.setAttribute('type', 'button');
+
+            const confirmIcon = document.createElement('img')
+            confirmIcon.setAttribute('src', '../static/images/check-circle.svg')
+            confirmIcon.setAttribute('alt', 'Save')
+
+            confirmButton.appendChild(confirmIcon)
+            newUtilityCell.appendChild(confirmButton)
+
+            // Create button for canceling edition
+            const cancelButton = document.createElement('button')
+            cancelButton.setAttribute('class', 'btn');
+            cancelButton.setAttribute('title', 'Cancel')
+            cancelButton.setAttribute('type', 'button');
+
+            const cancelIcon = document.createElement('img')
+            cancelIcon.setAttribute('src', '../static/images/x-circle.svg')
+            cancelIcon.setAttribute('alt', 'Cancel')
+            
+            cancelButton.appendChild(cancelIcon)
+            newUtilityCell.appendChild(cancelButton)
+            
+            domainInput.setAttribute('id', 'input-test')
+            
+            
+            // Handle edit request
+            confirmButton.addEventListener('click' , () => {
+
+                const newDomain = domainInput.value
+                const newUsername = usernameInput.value
+                const newPassword = passwordInput.value
+                
+                fetch('/', {
+                    method: 'UPDATE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        id: id,
+                        domain: newDomain,
+                        username: newUsername,
+                        password: newPassword
+                    })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        console.log('Error: ' + response.statusText);
+                    }
+                })
+                .catch(error => {
+                    console.log('Error: ' + error);
+                });
+
+            });
         });
     }
 });
