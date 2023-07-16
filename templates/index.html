@@ -7,50 +7,52 @@
 {% block title %} Vault {% endblock %}
 
 {% block main %}
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th class="text-start">Domain</th>
-            <th class="text-start">Username</th>
-            <th class="text-start">Password</th>
-            <th class="text-start"></th>
-        </tr>
-        </thead>
-            <tbody>
-                {% for item in list %}
-                <tr id="{{ item.id }}" name="tbody-row">
-                    <td class="text-start" name="domain-cell">{{ item.domain}}</td>
-                    <td class="text-start" name="username-cell">{{ item.username }}</td>
-                    <td class="text-start" name="password-cell">
-                        <div class="container mx-0 px-0">
-                            <input class="form-control mb-0 mx-auto w-auto" name="password-field" type="password" value="{{ item.hash }}" readonly>
-                            <button class="btn" name="visibility" title="Show">
-                                <img src="../static/images/eye.svg" alt="Show" name="eye">
-                            </button>
-                            <button class="btn" name="copy-button" title="Copy to clipboard">
-                                <img src="../static/images/clipboard.svg" alt="Copy to clipboard" name="clipboard">
-                            </button>
-                        </div>
-                    </td>
-                    <td name="utility-cell">
-                        <button class="btn" name="edit-button" role="button">
-                            <img src="../static/images/pencil.svg" alt="Edit" name="pencil">
-                        </button>
-                        <button class="btn" name="delete" title="Delete">
-                            <img src="../static/images/trash3.svg" alt="Delete">
-                        </button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        <tfoot>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
             <tr>
-                <td class= "border-0 text-end" colspan="6"><button class="btn btn-light" id="add" title="Add" data-bs-toggle="modal" data-bs-target="#add-password-modal">
-                    <img src="../static/images/plus-square.svg" alt="Add">
-                </button></td>
+                <th class="text-start">Domain</th>
+                <th class="text-start">Username</th>
+                <th class="text-start">Password</th>
+                <th class="text-start"></th>
             </tr>
-        </tfoot>
-    </table>
+            </thead>
+                <tbody>
+                    {% for item in list %}
+                    <tr id="{{ item.id }}" name="tbody-row">
+                        <td class="text-start" name="domain-cell">{{ item.domain}}</td>
+                        <td class="text-start" name="username-cell">{{ item.username }}</td>
+                        <td class="text-start" name="password-cell">
+                            <div class="container mx-0 px-0">
+                                <input class="form-control mb-0 mx-auto w-auto" name="password-field" type="password" value="{{ item.hash }}" readonly>
+                                <button class="btn" name="visibility" title="Show">
+                                    <img src="../static/images/eye.svg" alt="Show" name="eye">
+                                </button>
+                                <button class="btn" name="copy-button" title="Copy to clipboard">
+                                    <img src="../static/images/clipboard.svg" alt="Copy to clipboard" name="clipboard">
+                                </button>
+                            </div>
+                        </td>
+                        <td name="utility-cell">
+                            <button class="btn" name="edit-button" role="button">
+                                <img src="../static/images/pencil.svg" alt="Edit" name="pencil">
+                            </button>
+                            <button class="btn" name="delete" title="Delete">
+                                <img src="../static/images/trash3.svg" alt="Delete">
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            <tfoot>
+                <tr>
+                    <td class= "border-0 text-end" colspan="6"><button class="btn btn-light" id="add" title="Add" data-bs-toggle="modal" data-bs-target="#add-password-modal">
+                        <img src="../static/images/plus-square.svg" alt="Add">
+                    </button></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
     
     <!-- Modal for adding a password -->
     <div class="modal fade" id="add-password-modal" tabindex="-1" aria-labelledby="ModalLabel" aria-hidden="true">
