@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %} Import File {% endblock %}
+
+{% block main %}
+    <form action="/import_file" method="post" enctype="multipart/form-data">
+        <div class="container-sm">
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Choose a CSV file</label>
+                <input class="form-control" id="formFile" name="file" type="file" accept=".csv" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Upload</button>
+        </div>
+    </form>
+{% endblock %}
