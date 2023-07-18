@@ -4,12 +4,17 @@ from flask import Flask, flash, jsonify, redirect, render_template, request, ses
 from flask_session import Session
 from security import generate_hash, check_password, check_rehash, derive_key, encrypt, decrypt
 from cryptography.fernet import Fernet
-from helpers import login_required, query_db
+from helpers import login_required, query_db, allowed_extensions
+from werkzeug.utils import secure_filename
+from csv import DictReader
+
+UPLOAD_FOLDER = 'files/'
 
 app = Flask(__name__)
 
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 Session(app)
 
 # Server Fernet key
@@ -286,6 +291,56 @@ def change_password():
     else:
         return render_template('change_password.html')
     
+
+@app.route('/import_file', methods=['GET', 'POST'])
+@login_required
+def import_file():
+
+    if request.method == 'POST':
+
+        # Ensure post request has the file part
+        if 'file' not in request.files:
+            flash('No file part!', 'warning')
+            return redirect('/import_file')
+        
+        # Ensure user selected a file
+        file = request.files['file']
+        if file.filename == '':
+            flash('No file selected!', 'warning')
+            return redirect('/import_file')
+        
+        # Ensure file exists and extension is CSV
+        if not file or not allowed_extensions(file.filename):
+            flash("File wasn't uploaded or extension is not CSV!", 'danger')
+            return redirect('/import_file')
+        
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+        # Read file (DictReader)
+        with open(os.path.join(app.config['UPLOAD_FOLDER'], filename)) as csvfile:
+            reader = DictReader(csvfile)
+            user_key = Fernet(session['user_key'])
+
+            for row in reader:
+                
+                # Encrypt
+                domain = encrypt(user_key, row['domain'])
+                username = encrypt(user_key, row['username'])
+                password = encrypt(user_key, row['password'])
+
+                # Save into database
+                query_db('INSERT INTO passwords (user_id, username, domain, hash) VALUES (?, ?, ?, ?)', [session['user_id'], username, domain, password])
+        
+        # Delete user file
+        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+        # Return to index.html
+        flash('File imported!', 'success')
+        return redirect('/')
+
+    else:
+        return render_template('import_file.html')
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 @login_required

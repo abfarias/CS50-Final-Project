@@ -2,6 +2,7 @@ import sqlite3
 from flask import redirect, session, g
 from functools import wraps
 
+ALLOWED_EXTENSIONS = {'csv'}
 
 # Start of Flask configuration for sqlite3 usage
 DATABASE = 'safepass.db'
@@ -44,3 +45,13 @@ def login_required(f):
             return redirect("/login")
         return f(*args, **kwargs)
     return decorated_function
+
+
+def allowed_extensions(filename: str):
+    """
+    Checks if file extension is allowed
+
+    https://flask.palletsprojects.com/en/2.3.x/patterns/fileuploads/
+    """
+    return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
