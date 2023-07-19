@@ -284,8 +284,9 @@ def change_password():
 
         query_db('UPDATE users SET hash = ? WHERE id = ?', [new_hash, session['user_id']])
 
-        # Disconnect user and redirect to login page
-        return redirect('/logout')
+        # Redirect user to index
+        flash('Password changed!', 'success')
+        return redirect('/')
     
     # User reached route via GET (as by clicking a link or via redirect)
     else:
