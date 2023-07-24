@@ -18,7 +18,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 Session(app)
 
 # Server Fernet key
-server_key = Fernet(b'EpI8xrilovVLxd3QwMtEM5Pwbkwyb4JeXulio3JAnjE=')
+SERVER_KEY = Fernet(b'EpI8xrilovVLxd3QwMtEM5Pwbkwyb4JeXulio3JAnjE=')
 
 
 @app.teardown_appcontext
@@ -167,7 +167,7 @@ def register():
         username = request.form.get('username')
         hash = generate_hash(request.form.get('password'))
         m_hash = generate_hash(request.form.get('master_password'))
-        encrypted_salt = server_key.encrypt(salt)
+        encrypted_salt = SERVER_KEY.encrypt(salt)
 
         query_db('INSERT INTO users (username, hash, m_hash, salt) VALUES(?, ?, ?, ?)', [username, hash, m_hash, encrypted_salt])
 
@@ -223,7 +223,7 @@ def login():
 
         # Derive same encryption key generated in /register from master password
         encrypted_salt = query_db('SELECT salt FROM users WHERE id = ?', [session['user_id']], True)
-        salt = decrypt(server_key, encrypted_salt['salt'])
+        salt = decrypt(SERVER_KEY, encrypted_salt['salt'])
         
         key = derive_key(request.form.get('master_password', type=str), salt) 
         
@@ -291,6 +291,84 @@ def change_password():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template('change_password.html')
+    
+
+@app.route('/change_master_password', methods=['GET', 'POST'])
+@login_required
+def changer_master_password():
+
+    if request.method == 'POST':
+
+        # Ensure previous master password was submitted
+        if not request.form.get('previous_master_password'):
+            flash('Missing previous master password!', 'warning')
+            return render_template('change_master_password.html')
+        
+        # Ensure new master password was submitted
+        elif not request.form.get('new_master_password'):
+            flash('Missing new master password!', 'warning')
+            return render_template('change_master_password.html')
+
+        # Ensure new password confirmation was submitted
+        elif not request.form.get('confirmation'):
+            flash('Missing new master password confirmation!', 'warning')
+            return render_template('change_master_password.html')
+        
+        # Ensure new password confirmation matches
+        elif request.form.get('new_master_password') != request.form.get('confirmation'):
+            flash('Password confirmation does not match!', 'warning')
+            return render_template('change_master_password.html')
+        
+        # Ensure previous master password exists in the database
+        m_hash = query_db('SELECT m_hash FROM users WHERE id = ?', [session['user_id']], True)
+
+        if not check_password(m_hash['m_hash'], request.form.get('previous_master_password')):
+            flash('Previous password does not match!', 'danger')
+            return render_template('change_master_password.html')
+    
+        # Save new master password into the database
+        new_m_hash = generate_hash(request.form.get('new_master_password'))
+
+        query_db('UPDATE users SET m_hash = ? WHERE id = ?', [new_m_hash, session['user_id']])
+
+        # Decrypt user data with old user_key
+        user_key = Fernet(session['user_key'])
+
+        list = query_db('SELECT id, domain, username, hash FROM passwords WHERE user_id = ?', [session['user_id']])
+
+        for item in list:
+            item['domain'] = decrypt(user_key, item['domain']).decode('utf-8')
+            item['username'] = decrypt(user_key, item['username']).decode('utf-8')
+            item['hash'] = decrypt(user_key, item['hash']).decode('utf-8')
+
+        # Create new user_key
+        salt = os.urandom(16)
+        key = derive_key(request.form.get('new_master_password', type=str), salt) 
+        
+        session['user_key'] = key
+
+        # Save encrypted salt
+        encrypted_salt = SERVER_KEY.encrypt(salt)
+
+        query_db('UPDATE users SET salt = ? WHERE id = ?', [encrypted_salt, session['user_id']])
+
+        # Encrypt user data with new user_key
+        new_user_key = Fernet(session['user_key'])
+
+        for item in list:
+            item['domain'] = encrypt(new_user_key, item['domain'])
+            item['username'] = encrypt(new_user_key, item['username'])
+            item['hash'] = encrypt(new_user_key, item['hash'])
+
+            # Save data encrypted with new user_key into the database
+            query_db('UPDATE passwords SET domain = ?, username = ?, hash = ? WHERE user_id = ? AND id = ?', [item['domain'], item['username'], item['hash'], session['user_id'], item['id']])
+        
+        # Return to index
+        flash('Master password changed!', 'success')
+        return redirect('/')
+
+    else:
+        return render_template('change_master_password.html')
     
 
 @app.route('/import_file', methods=['GET', 'POST'])
