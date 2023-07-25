@@ -55,3 +55,30 @@ def allowed_extensions(filename: str):
     """
     return '.' in filename and \
             filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def valid_password(password: str, min_length=12, max_length=64):
+    """
+    Checks if password meets certain parameters
+    """
+    if len(password) < min_length or len(password) > max_length:
+        return False
+    
+    special = "~`!@#$%^&*()-_+={[}]|\/:;'<>,.?"
+    
+    has_uppercase = False
+    has_lowercase = False
+    has_digit = False
+    has_special = False
+
+    for letter in password:
+        if letter.isupper():
+            has_uppercase = True
+        elif letter.islower():
+            has_lowercase = True
+        elif letter.isdigit():
+            has_digit = True
+        elif letter in special:
+            has_special = True
+
+    return has_uppercase and has_lowercase and has_digit and has_special
