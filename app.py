@@ -4,7 +4,7 @@ from flask import Flask, flash, jsonify, redirect, render_template, request, ses
 from flask_session import Session
 from security import generate_hash, check_password, check_rehash, derive_key, encrypt, decrypt
 from cryptography.fernet import Fernet
-from helpers import login_required, query_db, allowed_extensions
+from helpers import login_required, query_db, allowed_extensions, valid_password
 from werkzeug.utils import secure_filename
 from csv import DictReader
 
@@ -146,6 +146,16 @@ def register():
             flash('Master password is missing!', 'warning')
             return render_template('register.html')
         
+        # Ensure password is valid
+        elif not valid_password(request.form.get('password', type=str)):
+            flash('Invalid password! Please follow the instructions.', 'danger')
+            return render_template('register.html')
+        
+        # Ensure master password is valid
+        elif not valid_password(request.form.get('master_password', type=str)):
+            flash('Invalid master password! Please follow the instructions.', 'danger')
+            return render_template('register.html')
+
         # Ensure password confirmation matches password
         elif request.form.get('password') != request.form.get('confirmation'):
             flash('Passwords does not match!', 'danger')
