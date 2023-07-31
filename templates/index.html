@@ -21,15 +21,22 @@
                     {% for item in list %}
                     <tr id="{{ item.id }}" name="tbody-row">
                         <td class="text-start" name="domain-cell">{{ item.domain}}</td>
-                        <td class="text-start" name="username-cell">{{ item.username }}</td>
+                        <td class="text-start" name="username-cell">
+                            <div class="container mx-0 px-0" style="position:relative">
+                                <input class="form-control mb-0 mx-auto w-auto" name="username-field" type="text" value="{{ item.username }}" readonly>
+                                <button class="btn" name="copy-button-username" title="Copy to clipboard" style="right:0%; position: absolute;">
+                                    <img src="../static/images/clipboard.svg" alt="Copy to clipboard" name="clipboard-username">
+                                </button>
+                            </div>
+                        </td>
                         <td class="text-start" name="password-cell">
                             <div class="container mx-0 px-0">
                                 <input class="form-control mb-0 mx-auto w-auto" name="password-field" type="password" value="{{ item.hash }}" readonly>
                                 <button class="btn" name="visibility" title="Show">
                                     <img src="../static/images/eye.svg" alt="Show" name="eye">
                                 </button>
-                                <button class="btn" name="copy-button" title="Copy to clipboard">
-                                    <img src="../static/images/clipboard.svg" alt="Copy to clipboard" name="clipboard">
+                                <button class="btn" name="copy-button-password" title="Copy to clipboard">
+                                    <img src="../static/images/clipboard.svg" alt="Copy to clipboard" name="clipboard-password">
                                 </button>
                             </div>
                         </td>
