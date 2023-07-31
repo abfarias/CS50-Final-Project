@@ -84,16 +84,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Create 'copy to clipboard' functionality
     // Adapted from https://www.youtube.com/watch?v=9-vBx7F0lns
-    const copyButtons = document.getElementsByName('copy-button')
-    const clipboards = document.getElementsByName('clipboard')
+    const usernameFields = document.getElementsByName('username-field')
+    const copyButtonsUsername = document.getElementsByName('copy-button-username')
+    const copyButtonsPassword = document.getElementsByName('copy-button-password')
+    const usernameClipboards = document.getElementsByName('clipboard-username')
+    const passwordClipboards = document.getElementsByName('clipboard-password')
 
-    for (let i = 0, length = copyButtons.length; i < length; i++) {
+    for (let i = 0, length = copyButtonsUsername.length; i < length; i++) {
 
-        const copyButton = copyButtons[i]
+        const copyButtonUsername = copyButtonsUsername[i]
+        const copyButtonPassword = copyButtonsPassword[i]
+        const username = usernameFields[i]
         const password = passwordFields[i]
-        const clipboard = clipboards[i]
+        const usernameClipboard = usernameClipboards[i]
+        const passwordClipboard = passwordClipboards[i]
 
-        copyButton.addEventListener('click', () => {
+        // Copies username input field value on click
+        copyButtonUsername.addEventListener('click', () => { 
+
+            username.select()
+            document.execCommand('copy')
+
+            usernameClipboard.setAttribute('src', '../static/images/clipboard-check.svg')
+            window.getSelection().removeAllRanges()
+            setTimeout(() => {
+                usernameClipboard.setAttribute('src', '../static/images/clipboard.svg')
+            }, 1500);
+
+        })
+        
+        // Copies password input field value on click
+        copyButtonPassword.addEventListener('click', () => {
             
             const value = password.getAttribute('value')
             
@@ -108,10 +129,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             document.body.removeChild(hiddenText)
             
-            clipboard.setAttribute('src', '../static/images/clipboard-check.svg')
+            passwordClipboard.setAttribute('src', '../static/images/clipboard-check.svg')
             window.getSelection().removeAllRanges()
             setTimeout(() => {
-                clipboard.setAttribute('src', '../static/images/clipboard.svg')
+                passwordClipboard.setAttribute('src', '../static/images/clipboard.svg')
             }, 1500);
         });
     }
