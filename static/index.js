@@ -6,30 +6,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     check.addEventListener('click', () => {
 
-        const passwordType = password.getAttribute('type');
+        const passwordType = password.getAttribute('type')
 
         if (passwordType == 'password') {
-            password.setAttribute('type', 'text');
+            password.setAttribute('type', 'text')
         } else {
-            password.setAttribute('type', 'password');
+            password.setAttribute('type', 'password')
         }
-    });
+    })
 
     
     // Create confirmation interface for deleting a password
     const rows = document.getElementsByName('tbody-row')
-    const deleteButtons = document.getElementsByName('delete');
+    const deleteButtons = document.getElementsByName('delete')
     
     for (let i = 0, length = deleteButtons.length; i < length; i++) {
 
         const row = rows[i]
-        const deleteButton = deleteButtons[i];
+        const deleteButton = deleteButtons[i]
         deleteButton.addEventListener('click', () => {
 
             // Remenber password row
-            const id = row.getAttribute('id');
+            const id = row.getAttribute('id')
 
             // Send a DELETE http request if user's confirmation is true
+            // Adapted from: https://www.youtube.com/watch?v=cuEtnrL9-H0
             if (confirm('Are you sure you want to delete this password?')) {
                 fetch('/', {
                     method: 'DELETE',
@@ -40,16 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .then(response => {
                     if (response.ok) {
-                        window.location.reload();
+                        window.location.reload()
                     } else {
-                        console.log('Error: ' + response.statusText);
+                        console.log('Error: ' + response.statusText)
                     }
                 })
                 .catch(error => {
-                    console.log('Error: ' + error);
-                });
+                    console.log('Error: ' + error)
+                })
             }
-        });
+        })
     }
 
 
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 eyeIcon.setAttribute('src', '../static/images/eye.svg')
                 eyeIcon.setAttribute('alt', 'Show')
             }
-        });
+        })
     }
 
 
@@ -109,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.getSelection().removeAllRanges()
             setTimeout(() => {
                 usernameClipboard.setAttribute('src', '../static/images/clipboard.svg')
-            }, 1500);
+            }, 1500)
 
         })
         
@@ -133,8 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
             window.getSelection().removeAllRanges()
             setTimeout(() => {
                 passwordClipboard.setAttribute('src', '../static/images/clipboard.svg')
-            }, 1500);
-        });
+            }, 1500)
+        })
     }
 
 
@@ -210,9 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
             // Create button for sending edit changes to the server
             const confirmButton = document.createElement('button')
-            confirmButton.setAttribute('class', 'btn');
+            confirmButton.setAttribute('class', 'btn')
             confirmButton.setAttribute('title', 'Save Changes')
-            confirmButton.setAttribute('type', 'button');
+            confirmButton.setAttribute('type', 'button')
 
             const confirmIcon = document.createElement('img')
             confirmIcon.setAttribute('src', '../static/images/check-circle.svg')
@@ -223,9 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Create button for canceling edition
             const cancelButton = document.createElement('button')
-            cancelButton.setAttribute('class', 'btn');
+            cancelButton.setAttribute('class', 'btn')
             cancelButton.setAttribute('title', 'Cancel')
-            cancelButton.setAttribute('type', 'button');
+            cancelButton.setAttribute('type', 'button')
 
             const cancelIcon = document.createElement('img')
             cancelIcon.setAttribute('src', '../static/images/x-circle.svg')
@@ -246,12 +247,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newUsername = usernameInput.value
                 const newPassword = passwordInput.value
                 
+                // Send a UPDATE http request when user confirms edition
+                // Adapted from: https://www.youtube.com/watch?v=cuEtnrL9-H0
                 fetch('/', {
                     method: 'UPDATE',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         id: id,
                         domain: newDomain,
                         username: newUsername,
@@ -260,16 +263,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .then(response => {
                     if (response.ok) {
-                        window.location.reload();
+                        window.location.reload()
                     } else {
-                        console.log('Error: ' + response.statusText);
+                        console.log('Error: ' + response.statusText)
                     }
                 })
                 .catch(error => {
-                    console.log('Error: ' + error);
-                });
-
-            });
-        });
+                    console.log('Error: ' + error)
+                })
+            })
+        })
     }
-});
+})
