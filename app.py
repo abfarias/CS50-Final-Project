@@ -106,7 +106,7 @@ def index():
     else:
 
         # Get updated list of passwords
-        list = query_db("SELECT id, username, domain, hash FROM passwords WHERE user_id = ?", [session['user_id']])
+        list = query_db('SELECT id, username, domain, hash FROM passwords WHERE user_id = ?', [session['user_id']])
 
         # Decrypt list items
         user_key = Fernet(session['user_key'])
@@ -234,10 +234,38 @@ def login():
         # Derive same encryption key generated in /register from master password
         encrypted_salt = query_db('SELECT salt FROM users WHERE id = ?', [session['user_id']], True)
         salt = decrypt(SERVER_KEY, encrypted_salt['salt'])
+        key = derive_key(request.form.get('master_password', type=str), salt)
         
-        key = derive_key(request.form.get('master_password', type=str), salt) 
+        # Decrypt user's info
+        user_key = Fernet(key)
+
+        list = query_db('SELECT id, username, domain, hash FROM passwords WHERE user_id = ?', [session['user_id']])
+
+        for item in list:
+            item['username'] = decrypt(user_key, item['username']).decode('utf-8')
+            item['domain'] = decrypt(user_key, item['domain']).decode('utf-8')
+            item['hash'] = decrypt(user_key, item['hash']).decode('utf-8')
         
-        session['user_key'] = key
+        # Generate new salt for new encryption key
+        new_salt = os.urandom(16)
+        new_key = derive_key(request.form.get('master_password', type=str), new_salt)
+
+        # Remenber user key
+        session['user_key'] = new_key
+
+        # Save new salt into database
+        new_encrypted_salt = SERVER_KEY.encrypt(new_salt)
+        query_db('UPDATE users SET salt = ? WHERE id = ?', [new_encrypted_salt, session['user_id']])
+
+        # Encrypt user's info with new key and save into database
+        new_user_key = Fernet(new_key)
+
+        for item in list:
+            item['username'] = encrypt(new_user_key, item['username'])
+            item['domain'] = encrypt(new_user_key, item['domain'])
+            item['hash'] = encrypt(new_user_key, item['hash'])
+
+            query_db('INSERT INTO passwords (user_id, username, domain, hash) VALUES (?, ?, ?, ?)', [session['user_id'], item['username'], item['domain'], item['password']])
 
         # Ensure hash is up to date
         if check_rehash(rows[0]['hash']):
