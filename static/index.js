@@ -151,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editButton = editButtons[i]
         const domainCell = domainCells[i]
         const usernameCell = usernameCells[i]
+        const usernameField = usernameFields[i]
         const passwordCell = passwordCells[i]
         const utilityCell = utilityCells[i]
         const passwordField = passwordFields[i]
@@ -162,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Get domain, username and password values
             const domain = domainCell.textContent
-            const username = usernameCell.textContent
+            const username = usernameField.getAttribute('value')
             const password = passwordField.getAttribute('value')
 
             // Change selected row cells into input fields for editing
