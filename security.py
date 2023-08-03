@@ -39,6 +39,7 @@ def check_rehash(hash: str) -> bool:
 
 
 def derive_key(password: str, salt: bytes) -> bytes:
+    """Derive a secure key for encryption"""
     
     password = password.encode('utf-8')
 
@@ -57,11 +58,13 @@ def derive_key(password: str, salt: bytes) -> bytes:
 
 
 def encrypt(key: Fernet, data: str) -> bytes:
+    """Encrypt data with Fernet key"""
     data = data.encode('utf-8')
     token = key.encrypt(data)
     return token
 
 
 def decrypt(key: Fernet, token: bytes) -> bytes:
+        """Decrypt data with Fernet key"""
         data = key.decrypt(token)
         return data 

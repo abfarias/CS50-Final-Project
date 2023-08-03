@@ -258,6 +258,7 @@ def login():
 @app.route('/change_password', methods=['GET', 'POST'])
 @login_required
 def change_password():
+    """Change user's password"""
     
     # User reached route via POST (as by submitting a form via POST)
     if request.method == 'POST':
@@ -306,7 +307,9 @@ def change_password():
 @app.route('/change_master_password', methods=['GET', 'POST'])
 @login_required
 def changer_master_password():
+    """Change user's master password"""
 
+    # User reached route via POST (as by submitting a form via POST)
     if request.method == 'POST':
 
         # Ensure previous master password was submitted
@@ -377,6 +380,7 @@ def changer_master_password():
         flash('Master password changed!', 'success')
         return redirect('/')
 
+    # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template('change_master_password.html')
     
@@ -384,7 +388,9 @@ def changer_master_password():
 @app.route('/import_file', methods=['GET', 'POST'])
 @login_required
 def import_file():
+    """Upload CSV file"""
 
+    # User reached route via POST (as by submitting a form via POST)
     if request.method == 'POST':
 
         # Ensure post request has the file part
@@ -428,13 +434,16 @@ def import_file():
         flash('File imported!', 'success')
         return redirect('/')
 
+    # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template('import_file.html')
 
 @app.route('/delete_account', methods=['GET', 'POST'])
 @login_required
 def delete_account():
+    """Delete user's account"""
     
+    # User reached route via POST (as by submitting a form via POST)
     if request.method == 'POST':
          
         # Ensure username was submitted
@@ -466,6 +475,8 @@ def delete_account():
 
         # Disconnect user and redirect to login page
         return redirect('/logout')
+    
+    # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template('delete_account.html')
 
