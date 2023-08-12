@@ -18,6 +18,8 @@ It is a symmetric[^3] encryption that requires a passphrase and a random salt to
 ### Database schema
 [Flask’s integration with SQLite3]( https://flask.palletsprojects.com/en/2.3.x/patterns/sqlite3/) was employed to serve as the project’s database. It’s a simple relational database featuring a table `users` with a one-to-many relationship with the table `passwords`.
 
+![Illustration diagram for database schema](static/Images/database_diagram.png)
+
 ## BackEnd
 ### [`app.py`](/app.py)
 This file is where most of the server logic resides. The first lines of code (1-25) start with the usual import declarations, some server configurations, the definition of the server Fernet key, which is a binary string used for encryption, and a function for closing the database connection when the application context[^4] is popped.
