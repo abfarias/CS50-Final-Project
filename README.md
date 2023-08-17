@@ -2,7 +2,11 @@
 ## Introduction
 This repository was submitted as the final project for CS50X 2023 online course offered by Harvard University. It’s a web application built around Flask’s framework and some software development/web programming languages covered by the course, such as Python, JavaScript, SQL, HTML and CSS. The application is designed for storing passwords.
 
-The central component of the application is the **password vault**, where the user can **store**, **retrieve**, **upload** and **delete** their credentials from other sites or apps, which encompass domains, usernames, and passwords. To enable these interactions, the main application is **supported by additional files**, that contain **utilities** and **security** functions.
+The central component of the application is the **password vault**, where the user can **store**, **retrieve**, **upload** and **delete** their credentials from other sites or apps, which encompass domains, usernames, and passwords. To enable these interactions, the main application is **supported by additional files**, that contain **utilities** and **security** functions. 
+
+Here's an overview of the interface:
+
+![Application interface overview](static/Images/safepass_overview.png)
 
 The project files follow the layout guidelines of [Flask](https://flask.palletsprojects.com/en/2.3.x/tutorial/layout/), but in a simplified manner. The root files are `app.py`, `helpers.py`, `security.py` and `schema.sql`, serving as the **backend** of the application. Regarding the **frontend**, it is divided into two folders: `static` and `templates`. These folders host user-interactive functionality scripts, a style sheet and svgs, and HTML content, respectively.
 
@@ -63,12 +67,48 @@ from cryptography.fernet import Fernet
 key = Fernet.generate_key()
 f = Fernet(key) 
 ```
+However, **storing this instance in a session for later use across other routes is not viable**. Instead, the generated key must be assigned to a variable and then stored in the session. This approach creates the need to instantiate the Fernet key within the current route whenever there's a need to perform data encryption or decryption.
 
+Having said that, a round of the encryption looks like this:
+```
+# Encrypt data
+user_key = Fernet(session['user_key'])
 
+username = encrypt(user_key, request.form.get('username', type=str))
+domain = encrypt(user_key, request.form.get('domain', type=str))
+password = encrypt(user_key, request.form.get('password', type=str))
 
+# Save it into the database
+query_db('INSERT INTO passwords (user_id, username, domain, hash) VALUES (?, ?, ?, ?)', [session['user_id'], username, domain, password])
+```
+As for decryption:
+```
+# Get updated list of passwords
+list = query_db('SELECT id, username, domain, hash FROM passwords WHERE user_id = ?', [session['user_id']])
 
-### `helpers.py`
-### `security.py`
+# Decrypt list items
+user_key = Fernet(session['user_key'])
+
+for item in list:
+    item['username'] = decrypt(user_key, item['username']).decode('utf-8')
+    item['domain'] = decrypt(user_key, item['domain']).decode('utf-8')
+    item['hash'] = decrypt(user_key, item['hash']).decode('utf-8')
+```
+These processes are performed quite often and can be found at many `routes`.
+
+### [`helpers.py`](/helpers.py)
+This file contains several useful functions that aid the main file objectives. 
+Here is the list: 
+- [`get_db`](https://github.com/abfarias/CS50-Final-Project/blob/main/helpers.py#L10): Establishes a connection with the SQLite3 database
+- [`make_dicts`](https://github.com/abfarias/CS50-Final-Project/blob/main/helpers.py#L16): Dictionary factory, returns rows in the database as dictionaries
+- [`query_db`](https://github.com/abfarias/CS50-Final-Project/blob/main/helpers.py#L25): Allows for easy and safe execution of commands in the database 
+- [`login_required`](https://github.com/abfarias/CS50-Final-Project/blob/main/helpers.py#L36): Decorates the routes so they can only be accessed when the user is logged in
+- [`allowed_extensions`](https://github.com/abfarias/CS50-Final-Project/blob/main/helpers.py#L50): Checks if the file extension is allowed
+- [`valid_password`](https://github.com/abfarias/CS50-Final-Project/blob/main/helpers.py#L60): Defines a set of rules a password must follow to be considered valid
+
+All functions above are provided by Flask, with the exception of `valid_password`.
+
+### [`security.py`](/security.py)
 
 ## Frontend
 ### `static`
