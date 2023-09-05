@@ -31,6 +31,13 @@ Therefore, **to prevent the reuse of the salt**, and subsequently the same encry
 
 To avoid this, the **salt is encrypted** with the `SERVER_KEY` by the same method.
 
+The topics discussed above are illustrated below:
+![Flowchart part one](static/Images/fluxograma_p1.PNG)
+
+![Flowchart part two](static/Images/fluxograma_p2.PNG)
+
+![Flowchart part three](static/Images/fluxograma_p3.PNG)
+
 ### Database schema
 [Flask’s integration with SQLite3]( https://flask.palletsprojects.com/en/2.3.x/patterns/sqlite3/) was employed to serve as the [project’s database](/schema.sql). It’s a simple relational database featuring a table `users` with a one-to-many relationship with the table `passwords`.
 
